@@ -11,7 +11,7 @@ public class GameManager : MonoBehaviour {
 	public GUISkin skin;
 
 	private List<CarController> _cars;
-	private int _nextCarType;
+	private int _nextPathType;
 	private float _delay;
 	private static int _score;
 	private bool _gameInSession;
@@ -55,18 +55,16 @@ public class GameManager : MonoBehaviour {
 		SpawnCar (0);
 		SpawnCar (1);
 		_delay = 1f;
-		_nextCarType = Random.Range (0, Paths.Length);
+		_nextPathType = Random.Range (0, Paths.Length);
 		Invoke ("SpawnDelay", _delay);
 	}
 
 	private void SpawnDelay(){
 		if (GameOver)
 			return;
-		//Debug.Log ("GameController::SpawnDelay() d:"+_delay+" c:{1}"+_nextCarType);
-		SpawnCar (_nextCarType);
-		//TODO: cars type is unrelated to path, car type should be selected based on direction of the movement, so that logic needs to be moved to car controller.
+		SpawnCar (_nextPathType);
 		_delay = Random.Range (80, 200) / 100;
-		_nextCarType = Random.Range (0, Paths.Length);
+		_nextPathType = Random.Range (0, Paths.Length);
 		Invoke("SpawnDelay", _delay);
 	}
 
