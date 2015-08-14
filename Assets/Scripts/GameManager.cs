@@ -1,11 +1,11 @@
 ﻿using UnityEngine;
 using System.Collections;
 using System.Collections.Generic;
-public class GameManager : MonoBehaviour {
+public class GameManager : Singleton<GameManager> {
 	
 	public GameObject[] carsPreFabs;
-	public PathDefinition[] Paths;
-	public static bool GameOver =false;
+	List<PathDefinition> Paths = new List<PathDefinition>();
+	public bool GameOver = false;
 	public int MAX_CARS = 6;
 	public bool ShowUI;
 	public GUISkin skin;
@@ -19,16 +19,23 @@ public class GameManager : MonoBehaviour {
 
 	// Use this for initialization
 	void Start () {
+		Debug.Log("GameManager::Start");
 		//DontDestroyOnLoad (gameObject);
 		_cars = new List<CarController> ();
 		_score = 0;
 		_gameInSession = false;
-		_carsOnPath =  new int[Paths.Length];
-		startLevel ();
+		initLevel ();
 	}
 
-	void Awake() {
-		Application.targetFrameRate = 60;
+	public void addPath(PathDefinition path){
+		Debug.Log("GameManager::addPath");
+		Paths.Add (path);
+	}
+
+	public void initLevel() {
+		Debug.Log("GameManager::initLevel Paths.Count"+Paths.Count);
+		_carsOnPath =  new int[Paths.Count];
+		this.startLevel ();
 	}
 
 	public void OnGUI () { 
@@ -55,7 +62,7 @@ public class GameManager : MonoBehaviour {
 		SpawnCar (0);
 		SpawnCar (1);
 		_delay = 1f;
-		_nextPathType = Random.Range (0, Paths.Length);
+		_nextPathType = Random.Range (0, Paths.Count);
 		Invoke ("SpawnDelay", _delay);
 	}
 
@@ -64,7 +71,7 @@ public class GameManager : MonoBehaviour {
 			return;
 		SpawnCar (_nextPathType);
 		_delay = Random.Range (80, 200) / 100;
-		_nextPathType = Random.Range (0, Paths.Length);
+		_nextPathType = Random.Range (0, Paths.Count);
 		Invoke("SpawnDelay", _delay);
 	}
 

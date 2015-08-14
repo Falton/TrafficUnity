@@ -54,7 +54,7 @@ public class CarController : MonoBehaviour {
 	void OnTriggerEnter2D(Collider2D other) {
 		if (other.gameObject.tag != gameObject.tag && other.gameObject.tag != "Light") {
 			Debug.Log ("EXPLODE -- GAME OVER other:" + other.gameObject.tag);
-			GameManager.GameOver = true;
+			GameManager.Instance.GameOver = true;
 			Instantiate(deathParticles, transform.position,Quaternion.Euler(0,0,0));
 		}
 			
@@ -84,9 +84,9 @@ public class CarController : MonoBehaviour {
 			_currentPoint.MoveNext ();
 		}else if (distanceSquared < MaxDistanceToGoal * MaxDistanceToGoal && _currentPoint.Current == Path.Points [Path.Points.Length - 1]) {
 			EndReached = true;
-			GameManager gameMng = GameManager.FindObjectOfType<GameManager>();
+
 			if(Path.Lights.Length==0) _myScore =0;
-			gameMng.UpdateScore(_myScore);
+			GameManager.Instance.UpdateScore(_myScore);
 			//Destroy (gameObject,0f);
 		}
 	}

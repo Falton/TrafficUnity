@@ -10,6 +10,11 @@ public class PathDefinition : MonoBehaviour {
 		Dependant
 	}
 
+	void Start(){
+		Debug.Log("PathDefinition::Start");
+		GameManager.Instance.addPath (this);
+	}
+
 	public Transform[] Points;
 	public PathType Type;
 	public int direction;

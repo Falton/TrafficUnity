@@ -4,10 +4,11 @@ using System.Collections;
 public class SplashScreen : MonoBehaviour {
 	
 	public GUISkin skin;
+	
 	// Update is called once per frame
 	void Update () {
-		if (GameManager.GameOver)
-			GetComponentInParent<GameManager>().startLevel ();
+		if (GameManager.Instance.GameOver)
+			GameManager.Instance.initLevel ();
 	}
 
 	void OnGUI()

@@ -51,7 +51,7 @@ public class LightController : MonoBehaviour {
 	
 	// Update is called once per frame
 	void Update () {
-		if (GameManager.GameOver) {
+		if (GameManager.Instance.GameOver) {
 			if (CurrentState == LightState.Green) SwitchLight();
 			if(Automaic) CancelInvoke();
 		}
