@@ -10,6 +10,9 @@ public class GameManager : Singleton<GameManager> {
 	public bool ShowUI;
 	public GUISkin skin;
 
+	public List<string> allPrefabs = new List<string>();
+	Dictionary<string, GameObject> prefabs = new Dictionary<string, GameObject>();
+	Dictionary<string, List<string>> prefabsByTag = new Dictionary<string, List<string>>();
 	private List<CarController> _cars;
 	private int _nextPathType;
 	private float _delay;
@@ -24,6 +27,7 @@ public class GameManager : Singleton<GameManager> {
 		_cars = new List<CarController> ();
 		_score = 0;
 		_gameInSession = false;
+		LoadAllUnityPrefabs ();
 		initLevel ();
 	}
 
@@ -36,6 +40,33 @@ public class GameManager : Singleton<GameManager> {
 		Debug.Log("GameManager::initLevel Paths.Count"+Paths.Count);
 		_carsOnPath =  new int[Paths.Count];
 		this.startLevel ();
+	}
+
+	private void LoadAllUnityPrefabs() {
+		Debug.Log("LoadAllUnityPrefabs");
+		//Utilize the Resources class to automatically located the "Resources" directory
+		//Load each object that's a GameObject, that means prefabs.
+		foreach(GameObject go in Resources.LoadAll("Prefabs", typeof(GameObject))) {
+			
+			Debug.Log("LoadAllUnityPrefabs:"+go.ToString());
+			//Give ourselves a way to ignore some prefabs, like using the leading '_'
+			if(go.name.StartsWith("_") || prefabs.ContainsKey(go.name))
+				continue;
+			
+			if(!allPrefabs.Contains(go.name)) {
+				prefabs.Add(go.name, go);
+				allPrefabs.Add(go.name);
+				
+				//Unity prefabs only allow one tag.
+				if(!prefabsByTag.ContainsKey(go.tag)) {
+					prefabsByTag.Add(go.tag, new List<string>());
+				}
+				
+				prefabsByTag[go.tag].Add(go.name);
+			} else {
+				Debug.Log("Error: Duplicate prefab defined! `" + name + "`");
+			}
+		}
 	}
 
 	public void OnGUI () { 
@@ -80,7 +111,8 @@ public class GameManager : Singleton<GameManager> {
 			return;
 		}
 		this._carsOnPath [type]++;
-		var initialCar = Instantiate (carsPreFabs[ Paths[type].direction] );
+		Debug.Log ("prefabs:" + prefabs.Count);// + " prefabs[ Truck + (Paths[type].direction+1) ]:" + prefabs ["Truck" + (Paths [type].direction + 1)]);
+		var initialCar = Instantiate ( prefabs[ "Truck" + (Paths[type].direction+1) ] );
 		initialCar.GetComponent<CarController> ().initPath (Paths [type]);
 		initialCar.GetComponent<CarController> ().PathType = type;
 		initialCar.GetComponent<CarController> ().MaxSpeed = Random.Range (5, 50) / 10;
