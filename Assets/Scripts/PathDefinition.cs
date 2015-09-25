@@ -1,7 +1,6 @@
 ﻿using UnityEngine;
 using System.Collections;
 using System.Collections.Generic;
-using System;
 
 public class PathDefinition : MonoBehaviour {
 
@@ -10,16 +9,18 @@ public class PathDefinition : MonoBehaviour {
 		Dependant
 	}
 
-	void Start(){
-		Debug.Log("PathDefinition::Start");
-		GameManager.Instance.addPath (this);
-	}
-
 	public Transform[] Points;
 	public PathType Type;
 	public int direction;
 	public Transform[] DependantPoints;
 	public LightController[] Lights;
+	private int id;
+	private float _delay;
+
+	void Start () {
+		_delay = Random.Range (2, 5);
+	}
+
 	public IEnumerator<Transform> GetPathsEnumerator(){
 		if (Points == null || Points.Length < 1)
 			yield break;
@@ -37,7 +38,31 @@ public class PathDefinition : MonoBehaviour {
 			index=index+direction;
 		}
 	}
-	
+
+	public int Id {
+		get {
+			return id;
+		}
+		set {
+			id = value;
+			StartCoroutine("Spawn");
+		}
+	}
+
+	IEnumerator Spawn() {
+		for (;;) {
+			GameManager gameMng = GameManager.FindObjectOfType<GameManager> ();
+			gameMng.SpawnCar (Id);
+			_delay = Random.Range (0.3f, 2f);
+			yield return new WaitForSeconds(_delay);
+		}
+
+	}
+
+	public void cancelCars(){
+		StopCoroutine ("Spawn");
+	}
+
 	public void OnDrawGizmos(){
 		if (Points == null || Points.Length < 2)
 			return;

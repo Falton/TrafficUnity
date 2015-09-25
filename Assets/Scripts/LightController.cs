@@ -20,8 +20,15 @@ public class LightController : MonoBehaviour {
 
 		_greenLight.enabled = false;
 		if (Automaic) {
-			_delay = Random.Range (5, 10);
-			Invoke ("SwitchLight", _delay);
+			StartCoroutine("SwitchLightAuto");
+		}
+	}
+
+	IEnumerator SwitchLightAuto(){
+		for(;;){
+			SwitchLight();
+			_delay = Random.Range (3, 7);
+			yield return new WaitForSeconds(_delay);
 		}
 	}
 
@@ -35,25 +42,22 @@ public class LightController : MonoBehaviour {
 			_greenLight.enabled = true;
 			_redLight.enabled = false;
 		}
-
-		if (Automaic) {
-			_delay = Random.Range (5, 10);
-			Invoke ("SwitchLight", _delay);
-		}
 	}
 
 	void OnMouseUp() {
 		if (Automaic)
 			return;
 		SwitchLight ();
-		Debug.Log("LightController::OnMouseUp()");
 	}
 	
 	// Update is called once per frame
 	void Update () {
-		if (GameManager.Instance.GameOver) {
+		if (GameManager.GameOver) {
 			if (CurrentState == LightState.Green) SwitchLight();
-			if(Automaic) CancelInvoke();
+			//if(Automaic) {
+				//Debug.Log("GAME OVER - STOPPING COROUTINE");
+				//StopCoroutine("SwitchLightAuto");
+			//}
 		}
 	}
 }

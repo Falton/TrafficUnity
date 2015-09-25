@@ -1,20 +1,17 @@
 ﻿using UnityEngine;
 using System.Collections;
 using System.Collections.Generic;
-public class GameManager : Singleton<GameManager> {
+public class GameManager : MonoBehaviour {
 	
 	public GameObject[] carsPreFabs;
-	List<PathDefinition> Paths = new List<PathDefinition>();
-	public bool GameOver = false;
+	public PathDefinition[] Paths;
+	public static bool GameOver =false;
 	public int MAX_CARS = 6;
 	public bool ShowUI;
 	public GUISkin skin;
 
-	public List<string> allPrefabs = new List<string>();
-	Dictionary<string, GameObject> prefabs = new Dictionary<string, GameObject>();
-	Dictionary<string, List<string>> prefabsByTag = new Dictionary<string, List<string>>();
 	private List<CarController> _cars;
-	private int _nextPathType;
+	private int _nextCarType;
 	private float _delay;
 	private static int _score;
 	private bool _gameInSession;
@@ -22,51 +19,16 @@ public class GameManager : Singleton<GameManager> {
 
 	// Use this for initialization
 	void Start () {
-		Debug.Log("GameManager::Start");
 		//DontDestroyOnLoad (gameObject);
 		_cars = new List<CarController> ();
 		_score = 0;
 		_gameInSession = false;
-		LoadAllUnityPrefabs ();
-		initLevel ();
+		_carsOnPath =  new int[Paths.Length];
+		startLevel ();
 	}
 
-	public void addPath(PathDefinition path){
-		Debug.Log("GameManager::addPath");
-		Paths.Add (path);
-	}
-
-	public void initLevel() {
-		Debug.Log("GameManager::initLevel Paths.Count"+Paths.Count);
-		_carsOnPath =  new int[Paths.Count];
-		this.startLevel ();
-	}
-
-	private void LoadAllUnityPrefabs() {
-		Debug.Log("LoadAllUnityPrefabs");
-		//Utilize the Resources class to automatically located the "Resources" directory
-		//Load each object that's a GameObject, that means prefabs.
-		foreach(GameObject go in Resources.LoadAll("Prefabs", typeof(GameObject))) {
-			
-			Debug.Log("LoadAllUnityPrefabs:"+go.ToString());
-			//Give ourselves a way to ignore some prefabs, like using the leading '_'
-			if(go.name.StartsWith("_") || prefabs.ContainsKey(go.name))
-				continue;
-			
-			if(!allPrefabs.Contains(go.name)) {
-				prefabs.Add(go.name, go);
-				allPrefabs.Add(go.name);
-				
-				//Unity prefabs only allow one tag.
-				if(!prefabsByTag.ContainsKey(go.tag)) {
-					prefabsByTag.Add(go.tag, new List<string>());
-				}
-				
-				prefabsByTag[go.tag].Add(go.name);
-			} else {
-				Debug.Log("Error: Duplicate prefab defined! `" + name + "`");
-			}
-		}
+	void Awake() {
+		Application.targetFrameRate = 60;
 	}
 
 	public void OnGUI () { 
@@ -75,7 +37,7 @@ public class GameManager : Singleton<GameManager> {
 
 		if (GameOver && ShowUI) {
 			if (GUI.Button (new Rect ((Screen.width-400)/2, 150, 400, 100), "Replay")) {
-				Application.LoadLevel(1);
+				Application.LoadLevel(2);
 			}
 		}
 	}
@@ -90,32 +52,23 @@ public class GameManager : Singleton<GameManager> {
 			return;
 		_gameInSession = true;
 		GameOver = false;
-		SpawnCar (0);
-		SpawnCar (1);
-		_delay = 1f;
-		_nextPathType = Random.Range (0, Paths.Count);
-		Invoke ("SpawnDelay", _delay);
+		var imax = Paths.Length;
+		for (var i=0; i<imax; i++) {
+			Paths[i].Id = i;
+		}
 	}
+	
 
-	private void SpawnDelay(){
-		if (GameOver)
-			return;
-		SpawnCar (_nextPathType);
-		_delay = Random.Range (80, 200) / 100;
-		_nextPathType = Random.Range (0, Paths.Count);
-		Invoke("SpawnDelay", _delay);
-	}
-
-	private void SpawnCar (int type){
+	public void SpawnCar (int type){
 		if (Paths [type].Lights.Length > 0 && _carsOnPath [type] >= MAX_CARS) {
 			return;
 		}
+		Debug.Log ("SpawnCar: " + type.ToString());
 		this._carsOnPath [type]++;
-		Debug.Log ("prefabs:" + prefabs.Count);// + " prefabs[ Truck + (Paths[type].direction+1) ]:" + prefabs ["Truck" + (Paths [type].direction + 1)]);
-		var initialCar = Instantiate ( prefabs[ "Truck" + (Paths[type].direction+1) ] );
+		var initialCar = Instantiate (carsPreFabs[ Paths[type].direction] );
 		initialCar.GetComponent<CarController> ().initPath (Paths [type]);
 		initialCar.GetComponent<CarController> ().PathType = type;
-		initialCar.GetComponent<CarController> ().MaxSpeed = Random.Range (5, 50) / 10;
+		initialCar.GetComponent<CarController> ().MaxSpeed = Random.Range (10, 50) / 10;
 		_cars.Add (initialCar.GetComponent<CarController> ());
 	}
 	
@@ -134,7 +87,7 @@ public class GameManager : Singleton<GameManager> {
 
 	void Update (){
 		if (GameOver) {
-			CancelInvoke();
+			//CancelInvoke();
 			var imax = _cars.Count;
 			for (var i=imax-1; i>=0; i--) {
 
@@ -144,6 +97,10 @@ public class GameManager : Singleton<GameManager> {
 
 			}
 
+			imax = Paths.Length;
+			for(var i = 0; i < imax; i++){
+				Paths[i].cancelCars();
+			}
 			_gameInSession = false;
 		}
 	}
