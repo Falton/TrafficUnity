@@ -37,7 +37,7 @@ public class GameManager : MonoBehaviour {
 
 		if (GameOver && ShowUI) {
 			if (GUI.Button (new Rect ((Screen.width-400)/2, 150, 400, 100), "Replay")) {
-				Application.LoadLevel(2);
+				Application.LoadLevel(1);
 			}
 		}
 	}
@@ -45,6 +45,10 @@ public class GameManager : MonoBehaviour {
 	public void UpdateScore(int score){
 		_score += score;
 		Debug.Log ("Score:" + _score);
+
+		if (_score >= 10000 && (Application.loadedLevel+1) < Application.levelCount) {
+			Application.LoadLevel(Application.loadedLevel+1);
+		}
 	}
 
 	public void startLevel(){
